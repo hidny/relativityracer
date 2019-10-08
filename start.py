@@ -8,11 +8,17 @@ import time
 import textBox
 import box
 import button
+
+import math
 #input_var = raw_input("Enter something: ")
 #print "you entered " + str(input_var)
 
 #DOTS for cursor:
-
+#RELATIVITY GAME CODE
+		
+SPACE_BETWEEN_POINTS = 300
+C = SPACE_BETWEEN_POINTS/2
+#END RELATIVITY GAME CODE
 
 	
 def main(name):
@@ -63,9 +69,11 @@ def main(name):
 	#dx prev to erase prev:
 	dxprev = 0
 
-	dx=0
-	vx=0
-	ax=1
+	dx=0.0
+	px=0.0
+	vx=0.0
+	
+	ax=1.0
 	
 	while 1==1:
 		#Get mouse events:
@@ -108,8 +116,6 @@ def main(name):
 		
 		#RELATIVITY GAME CODE
 		
-		SPACE_BETWEEN_POINTS = 150
-		C = SPACE_BETWEEN_POINTS
 		
 		#erase mesh from last frame
 		for y in range(0, screen_height, SPACE_BETWEEN_POINTS):
@@ -123,14 +129,32 @@ def main(name):
 		
 		#If mouse held accelerate to the right else decelerate (and down go below 0)
 		if mouseHeld == 1:
-			vx = vx + 1
+			px = px + 1.0
 		else:
-			vx = vx - 1
-			if vx < 0:
-				vx = 0
+			px = px - 1.0
+			if px < 0:
+				px = 0
+		
+		lambdaNum = getLambda(vx)
+		print("lambdaNum: " + str(lambdaNum))
+		
+		print("px: " + str(px))
+		print("vx: " + str(vx))
 		
 		dxprev = dx
+		
+		#TODO: SOLVE p=v/(sqrt(1-(v^2-c^2)))
+		#Maybe do a binary search?
+		vx = 0.0
+		for vtrial in range(0, C):
+			if( vtrial * getLambda(vtrial) <= px):
+				vx = vtrial
+			else:
+				break
+		
 		dx = dx + vx
+		
+		
 		#END RELATITY GAME CODE
 		
 		labelExample = myfont.render("Mellow", 1, (0,255,0))
@@ -175,6 +199,10 @@ def shouldBlinkTextCursor():
 		return 1
 	else:
 		return 0
+		
+		
+def getLambda(v):
+	return 1.0 /  math.sqrt(1.0 - ((1.0*v*v) / (1.0*SPACE_BETWEEN_POINTS*SPACE_BETWEEN_POINTS)))
 	
 if __name__ == "__main__":
 	main('hello world')
