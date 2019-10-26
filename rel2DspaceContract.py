@@ -9,6 +9,8 @@ import textBox
 import box
 import button
 
+import coord
+
 import math
 #input_var = raw_input("Enter something: ")
 #print "you entered " + str(input_var)
@@ -195,6 +197,11 @@ def main(name):
 		else:
 			screen.blit(reddot, (100, 50), (0, 0, 10, 10))
 		
+		#Print coord stuff:
+		pointInSpace = coord.Coord(5, 10)
+		newCoord = getContractedCoord(coord.Coord(0,0), pointInSpace, coord.Coord(vx,0))
+		#Prediction: 10 stays 10 but 5 decreses as we go faster
+		print("New coord: " + str(newCoord.x) + " , " + str(newCoord.y))
 		#pygame.draw.rect()
 		
 		pygame.display.update()
@@ -212,8 +219,73 @@ def shouldBlinkTextCursor():
 		return 1
 	else:
 		return 0
+
+
+def getContractedCoord(pointO, point, vel):
+	#Edge case when velocity is 0 or the two points are at the same spot:
+	if getLength(vel) == 0.0 or (point.x == pointO.x and point.y == pointO.y):
+		return coord.Coord(point.x, point.y)
+	
+	vector2 = getDiff(point, pointO)
+	
+	#TODO: try to reduce copy/paste code?
+	vectora1 = getLength(vector2) * getCosTheta(vel, vector2) * dirTheta(vel, vector2) * vel.x  / ( getLength(vel) * getLambdaVector(vel) )
+	vectora2 = getLength(vector2) * getCosTheta(vel, vector2) * dirTheta(vel, vector2) * vel.y / ( getLength(vel)* getLambdaVector(vel) )
+	
+	vectorb1 = getLength(vector2) * getSinTheta(vel, vector2) * getCounterClockPerp(vel).x /(getLength(vel))
+	vectorb2 = getLength(vector2) * getSinTheta(vel, vector2) * getCounterClockPerp(vel).y /(getLength(vel))
+
+	finalCoordx = pointO.x + vectora1 + vectorb1
+	finalCoordy = pointO.y + vectora2 + vectorb2
+	
+	print("New coord vector A: " + str(vectora1) + " , " + str(vectora2))
+	print("New coord vector B: " + str(vectorb1) + " , " + str(vectorb2))
+	
+	return coord.Coord(finalCoordx, finalCoordy)
+
+def getSum(pointa, prointb):
+	return coord.Coord(pointa.x + pointb.x, pointa.y + pointb.y)
+
+#input1 - input2
+def getDiff(pointb, pointa):
+	return coord.Coord(pointb.x - pointa.x, pointb.y - pointa.y)
 		
 		
+def getTheta(coord1, coord2):
+	return signTheta(coord1, coord2) * getAbsTheta(coord1, coord2)
+
+#Coord 1 is reference dir
+def dirTheta(coord1, coord2):
+	if(coord1.x * coord2.y - coord1.y*coord2.x > 0.0):
+		return 1.0
+	else:
+		return -1.0
+		
+def getAbsTheta(coord1, coord2):
+	math.acos(Math.abs(getCosTheta(coord1, coord2)))
+		
+def getSinTheta(coord1, coord2):
+	return (1.0 *coord1.x * coord2.y - 1.0 * coord1.y*coord2.x )/(getLength(coord1) * getLength(coord2))
+		
+def getCosTheta(coord1, coord2):
+	return (1.0 * getScalarMult(coord1, coord2)) / (1.0 * getLength(coord1) * getLength(coord2))
+		
+def getScalarMult(coord1, coord2):
+	return 1.0 * coord1.x*coord2.x + 1.0 * coord1.y*coord2.y
+
+def getLength(vector):
+	return 1.0*math.sqrt(vector.x*vector.x + vector.y*vector.y)
+
+def getCounterClockPerp(vector):
+	return coord.Coord(0.0 - vector.y, 1.0 * vector.x)
+
+def getLambdaVector(vector):
+	if( getLength(vector) >= C):
+		print "ERROR: vector is going faster than C!"
+		sys.exit()
+	
+	return getLambda(getLength(vector))
+
 def getLambda(v):
 	return 1.0 /  (1.0*math.sqrt(1.0 - ((1.0*v*v) / (1.0*C*C))))
 	
